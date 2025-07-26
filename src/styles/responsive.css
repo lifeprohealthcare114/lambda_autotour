@@ -1,0 +1,66 @@
+@media (max-width: 768px) {
+  .hero-content h1 {
+    font-size: 1.8rem;
+  }
+  
+  .hero-content p {
+    font-size: 1rem;
+  }
+  
+  .explore-button {
+    padding: 0.7rem 1.5rem;
+  }
+  
+  .product-explorer h2 {
+    font-size: 2rem;
+  }
+  
+  .product-image-container {
+    padding: 1rem;
+  }
+  
+  .marker-label {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+  }
+  
+  .modal-content {
+    padding: 1.5rem;
+  }
+  
+  .modal-content h3 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+  
+  .header .container {
+    flex-direction: column;
+  }
+  
+  .nav {
+    margin-top: 1rem;
+  }
+  
+  .nav-button {
+    margin: 0 0.5rem;
+  }
+  
+  .product-explorer h2 {
+    font-size: 1.8rem;
+  }
+  
+  .marker-dot {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .modal-content {
+    width: 95%;
+    padding: 1rem;
+  }
+}

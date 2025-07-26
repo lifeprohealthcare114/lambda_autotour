@@ -1,0 +1,146 @@
+.condition-visualizer {
+  padding: 4rem 2rem;
+  background-color: white;
+  max-width: 1200px;
+  margin: 0 auto;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+}
+
+.condition-visualizer h2 {
+  text-align: center;
+  color: #2c3e50;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.subtitle {
+  text-align: center;
+  color: #7f8c8d;
+  margin-bottom: 2rem;
+  font-size: 1.1rem;
+}
+
+.condition-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 3rem;
+}
+
+.condition-btn {
+  padding: 0.8rem 1.8rem;
+  border: none;
+  background-color: #f8f9fa;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.condition-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.condition-btn.active {
+  background-color: #3498db;
+  color: white;
+}
+
+.condition-icon {
+  font-size: 1.3rem;
+}
+
+.condition-detail {
+  display: flex;
+  gap: 3rem;
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 2rem;
+}
+
+.detail-content {
+  flex: 1;
+}
+
+.detail-content h3 {
+  color: #2c3e50;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.detail-content p {
+  color: #34495e;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.detail-content h4 {
+  color: #3498db;
+  margin-bottom: 1rem;
+}
+
+.treatment-list {
+  padding-left: 1rem;
+  color: #2c3e50;
+}
+
+.treatment-list li {
+  margin-bottom: 0.8rem;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.treatment-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.6rem;
+  width: 8px;
+  height: 8px;
+  background-color: #3498db;
+  border-radius: 50%;
+}
+
+.detail-image {
+  flex: 1;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.detail-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 768px) {
+  .condition-detail {
+    flex-direction: column;
+  }
+  
+  .detail-image {
+    height: 250px;
+  }
+  
+  .condition-btn {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .condition-visualizer {
+    padding: 2rem 1rem;
+  }
+  
+  .condition-detail {
+    padding: 1.5rem;
+  }
+}
