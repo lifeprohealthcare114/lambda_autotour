@@ -29,7 +29,7 @@ const ProductExplorer = () => {
     markers.forEach((marker, index) => {
       marker.style.animation = `pulse 2s ${index * 0.2}s 3`;
     });
-    
+
     // Start the tour immediately on load
     setStartTour(true);
   }, []);
@@ -47,16 +47,24 @@ const ProductExplorer = () => {
 
   const handleTourEnd = () => {
     setScrollingDown(true);
+
+    // Scroll to bottom smoothly
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
 
     const check = setInterval(() => {
       if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 5) {
         clearInterval(check);
+
+        // Wait for 6 seconds before scrolling up and navigating home
         setTimeout(() => {
           setScrollingDown(false);
           scrollToTop();
-          setTimeout(() => window.dispatchEvent(new CustomEvent('navigate-home')), 1000);
-        }, 1800);
+
+          // Optional: wait 1 second after scrolling up before navigating
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('navigate-home'));
+          }, 1000);
+        }, 6000); // 6 second delay
       }
     }, 300);
   };

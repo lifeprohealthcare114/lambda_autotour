@@ -225,6 +225,8 @@ const deviceComponents = [
     )
   }
 ];
+
+
 const VirtualTour = ({ onTourEnd, startTour }) => {
   const [activeLabel, setActiveLabel] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -242,6 +244,33 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
   const deviceViewRef = useRef(null);
   const modalRef = useRef(null);
   const tourTimerRef = useRef(null);
+  const lastInteractionRef = useRef(Date.now());
+  const inactivityTimerRef = useRef(null);
+
+  useEffect(() => {
+    const resetTimer = () => {
+      lastInteractionRef.current = Date.now();
+    };
+
+    const checkInactivity = () => {
+      if (isTourPaused && Date.now() - lastInteractionRef.current > 2 * 60 * 1000) {
+        setIsTourPaused(false);
+        setManualScrollOverride(false);
+      }
+    };
+
+    document.addEventListener('mousemove', resetTimer);
+    document.addEventListener('keydown', resetTimer);
+    document.addEventListener('touchstart', resetTimer);
+    inactivityTimerRef.current = setInterval(checkInactivity, 10000);
+
+    return () => {
+      document.removeEventListener('mousemove', resetTimer);
+      document.removeEventListener('keydown', resetTimer);
+      document.removeEventListener('touchstart', resetTimer);
+      clearInterval(inactivityTimerRef.current);
+    };
+  }, [isTourPaused]);
 
   useEffect(() => {
     if (startTour) {
@@ -351,7 +380,6 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
 
         await waitForVideoEnd(modalRef.current);
 
-        // ⏳ 5-second delay ONLY for first modal
         if (tourIndex === 0) {
           await new Promise(r => setTimeout(r, 5000));
         }
@@ -359,26 +387,30 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
         await autoScrollModal();
       }
 
-      const delay = estimateReadingTime();
+      const isLastStep = tourIndex === deviceComponents.length - 1;
+      const delay = isLastStep ? 1000 : estimateReadingTime();
 
       tourTimerRef.current = setTimeout(async () => {
-        const isLastStep = tourIndex === deviceComponents.length - 1;
-        setActiveLabel(null);
+        if (!isTourPaused) {
+          setActiveLabel(null);
+        }
 
         if (!isLastStep) {
           await new Promise(r => setTimeout(r, 3000));
-          setTourIndex(i => i + 1);
+          if (!isTourPaused) {
+            setTourIndex(i => i + 1);
+          }
         } else {
-          // ⏱️ Use dynamic delay instead of fixed wait
-          await new Promise(r => setTimeout(r, estimateReadingTime()));
-          setZoomLevel(1);
-          setPosition({ x: 0, y: 0 });
-          setTimeout(() => {
-            setIsTourActive(false);
-            if (typeof onTourEnd === 'function') {
-              setTimeout(onTourEnd, 500);
-            }
-          }, 3000);
+          if (!isTourPaused) {
+            setZoomLevel(1);
+            setPosition({ x: 0, y: 0 });
+            setTimeout(() => {
+              setIsTourActive(false);
+              if (typeof onTourEnd === 'function') {
+                setTimeout(onTourEnd, 500);
+              }
+            }, 3000);
+          }
         }
       }, delay);
     }
