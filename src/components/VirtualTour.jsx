@@ -5,7 +5,7 @@ const deviceComponents = [
   {
     id: 'display',
     name: 'Interactive Display',
-    position: { top: '41%', left: '28%' },
+    position: { top: '40%', left: '34%' },
     details: (
       <div className="detail-content">
         <div className="media-container">
@@ -60,7 +60,7 @@ const deviceComponents = [
   {
     id: 'visualization',
     name: 'Patient Visualization Screen',
-    position: { top: '30%', left: '65%' },
+    position: { top: '35%', left: '60%' },
     details: (
       <div className="detail-content">
         <div className="media-container">
@@ -116,7 +116,7 @@ const deviceComponents = [
     id: 'pedals',
     name: 'Adjustable Pedals',
     description: 'Ergonomic foot positioning system',
-    position: { top: '68%', left: '60%' },
+    position: { top: '65%', left: '58%' },
     details: (
       <div className="detail-content">
         <div className="media-container">
@@ -157,7 +157,7 @@ const deviceComponents = [
     id: 'seat',
     name: '360° Rotating Seat',
     description: 'Patient transfer system',
-    position: { top: '48%', left: '86%' },
+    position: { top: '55%', left: '74%' },
     details: (
       <div className="detail-content">
         <div className="media-container">
@@ -184,7 +184,7 @@ const deviceComponents = [
   {
     id: 'sensors',
     name: 'Precision Sensors',
-    position: { top: '57%', left: '62%' },
+    position: { top: '58%', left: '61%' },
     details: (
       <div className="detail-content">
         <div className="media-container">
@@ -225,7 +225,6 @@ const deviceComponents = [
     )
   }
 ];
-
 const VirtualTour = ({ onTourEnd, startTour }) => {
   const [activeLabel, setActiveLabel] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -234,27 +233,28 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
   const [startPos, setStartPos] = useState({ x: 0, y: 0 });
   const [autoZoomDirection, setAutoZoomDirection] = useState('in');
   const [isTourActive, setIsTourActive] = useState(false);
+  const [isTourPaused, setIsTourPaused] = useState(false);
   const [tourIndex, setTourIndex] = useState(0);
-  const [isAutoZooming, setIsAutoZooming] = useState(true);
   const [clickPosition, setClickPosition] = useState(null);
+  const [manualScrollOverride, setManualScrollOverride] = useState(false);
 
   const deviceImageRef = useRef(null);
   const deviceViewRef = useRef(null);
   const modalRef = useRef(null);
+  const tourTimerRef = useRef(null);
 
   useEffect(() => {
     if (startTour) {
-      const tourStartTimer = setTimeout(() => {
+      const timer = setTimeout(() => {
         setIsTourActive(true);
-        setIsAutoZooming(false);
-      }, 5000);
-      return () => clearTimeout(tourStartTimer);
+      }, 500);
+      return () => clearTimeout(timer);
     }
   }, [startTour]);
 
   useEffect(() => {
-    if (!isTourActive && isAutoZooming) {
-      const interval = setInterval(() => {
+    const interval = setInterval(() => {
+      if (!isTourPaused && (!isTourActive || (isTourActive && !activeLabel))) {
         setZoomLevel(prev => {
           let next = autoZoomDirection === 'in' ? prev + 0.01 : prev - 0.01;
           if (next >= 1.5) {
@@ -266,19 +266,22 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
           }
           return parseFloat(next.toFixed(2));
         });
-      }, 100);
-      return () => clearInterval(interval);
-    }
-  }, [autoZoomDirection, isTourActive, isAutoZooming]);
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, [autoZoomDirection, isTourActive, isTourPaused, activeLabel]);
 
   const estimateReadingTime = useCallback(() => {
     if (!modalRef.current) return 3000;
-    const wordCount = (modalRef.current.innerText || '').split(/\s+/).length;
+    const text = modalRef.current.innerText || '';
+    const wordCount = text.split(/\s+/).length;
     const readingTime = (wordCount / 3) * 100 + 2000;
-    const scrollTime = modalRef.current.scrollHeight > modalRef.current.clientHeight
-      ? (modalRef.current.scrollHeight - modalRef.current.clientHeight) * 20
+    const visibleHeight = modalRef.current.clientHeight;
+    const scrollHeight = modalRef.current.scrollHeight;
+    const scrollTime = scrollHeight > visibleHeight
+      ? (scrollHeight - visibleHeight) * 15
       : 0;
-    return Math.min(25000, Math.max(5000, readingTime + scrollTime));
+    return Math.min(30000, Math.max(5000, readingTime + scrollTime));
   }, []);
 
   const waitForVideoEnd = useCallback((element) => {
@@ -301,11 +304,11 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
 
   const autoScrollModal = useCallback(() => {
     return new Promise(resolve => {
-      if (!modalRef.current || modalRef.current.scrollHeight <= modalRef.current.clientHeight)
+      if (!modalRef.current || modalRef.current.scrollHeight <= modalRef.current.clientHeight || manualScrollOverride)
         return resolve();
-      let scrolled = 0;
       const totalScroll = modalRef.current.scrollHeight - modalRef.current.clientHeight;
-      const step = 2;
+      const step = 1;
+      let scrolled = 0;
       const interval = setInterval(() => {
         if (!modalRef.current || scrolled >= totalScroll) {
           clearInterval(interval);
@@ -314,56 +317,79 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
           modalRef.current.scrollTop += step;
           scrolled += step;
         }
-      }, 20);
+      }, 15);
     });
-  }, []);
+  }, [manualScrollOverride]);
+
+  const runTourStep = useCallback(async () => {
+    if (!isTourActive || isTourPaused) return;
+
+    const hotspot = deviceComponents[tourIndex];
+    if (hotspot) {
+      const el = document.querySelector(`.hotspot[data-id="${hotspot.id}"]`);
+      if (el) {
+        const rect = el.getBoundingClientRect();
+        setClickPosition({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
+        setTimeout(() => setClickPosition(null), 800);
+      }
+
+      setActiveLabel(hotspot.id);
+      setZoomLevel(1.4);
+      setPosition({ x: 0, y: 0 });
+
+      await new Promise(r => setTimeout(r, 300));
+      if (modalRef.current) {
+        modalRef.current.scrollTo({ top: 0 });
+
+        const video = modalRef.current.querySelector('video');
+        if (video) {
+          try {
+            video.currentTime = 0;
+            await video.play();
+          } catch (err) {}
+        }
+
+        await waitForVideoEnd(modalRef.current);
+
+        // ⏳ 5-second delay ONLY for first modal
+        if (tourIndex === 0) {
+          await new Promise(r => setTimeout(r, 5000));
+        }
+
+        await autoScrollModal();
+      }
+
+      const delay = estimateReadingTime();
+
+      tourTimerRef.current = setTimeout(async () => {
+        const isLastStep = tourIndex === deviceComponents.length - 1;
+        setActiveLabel(null);
+
+        if (!isLastStep) {
+          await new Promise(r => setTimeout(r, 3000));
+          setTourIndex(i => i + 1);
+        } else {
+          // ⏱️ Use dynamic delay instead of fixed wait
+          await new Promise(r => setTimeout(r, estimateReadingTime()));
+          setZoomLevel(1);
+          setPosition({ x: 0, y: 0 });
+          setTimeout(() => {
+            setIsTourActive(false);
+            if (typeof onTourEnd === 'function') {
+              setTimeout(onTourEnd, 500);
+            }
+          }, 3000);
+        }
+      }, delay);
+    }
+  }, [tourIndex, isTourActive, isTourPaused, waitForVideoEnd, autoScrollModal, estimateReadingTime, onTourEnd]);
 
   useEffect(() => {
-    let tourTimer;
-    if (isTourActive) {
-      const runTourStep = async () => {
-        const hotspot = deviceComponents[tourIndex];
-        if (hotspot) {
-          const hotspotElement = document.querySelector(`.hotspot[data-id="${hotspot.id}"]`);
-          if (hotspotElement) {
-            const rect = hotspotElement.getBoundingClientRect();
-            setClickPosition({ x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
-            setTimeout(() => setClickPosition(null), 800);
-          }
-
-          setActiveLabel(hotspot.id);
-          setZoomLevel(1.4);
-          setPosition({ x: 0, y: 0 });
-
-          await new Promise(r => setTimeout(r, 300));
-
-          if (modalRef.current) {
-            modalRef.current.scrollTo({ top: 0 });
-            await waitForVideoEnd(modalRef.current);
-            await autoScrollModal();
-          }
-
-          const delay = estimateReadingTime();
-          tourTimer = setTimeout(async () => {
-            setActiveLabel(null);
-            await new Promise(r => setTimeout(r, 3000)); // 3-second gap before next
-
-            if (tourIndex + 1 < deviceComponents.length) {
-              setTourIndex(prev => prev + 1);
-            } else {
-              setIsTourActive(false);
-              setIsAutoZooming(true);
-              if (typeof onTourEnd === 'function') {
-                setTimeout(onTourEnd, 500);
-              }
-            }
-          }, delay);
-        }
-      };
+    clearTimeout(tourTimerRef.current);
+    if (isTourActive && !isTourPaused) {
       runTourStep();
     }
-    return () => clearTimeout(tourTimer);
-  }, [tourIndex, isTourActive, onTourEnd, waitForVideoEnd, autoScrollModal, estimateReadingTime]);
+  }, [tourIndex, isTourActive, isTourPaused, runTourStep]);
 
   const handleMouseDown = (e) => {
     if (zoomLevel > 1) {
@@ -396,11 +422,6 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
         <p className="subtitle">Exploring Lambda Therapy Robot Features</p>
       </div>
 
-      <div className="zoom-controls">
-        <button onClick={() => setZoomLevel(z => Math.min(z + 0.1, 2))}>+</button>
-        <button onClick={() => setZoomLevel(z => Math.max(z - 0.1, 1))}>-</button>
-      </div>
-
       <div
         className="device-view"
         ref={deviceViewRef}
@@ -410,39 +431,43 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
         onMouseLeave={() => setIsDragging(false)}
         style={{ cursor: isDragging ? 'grabbing' : zoomLevel > 1 ? 'grab' : 'default' }}
       >
-        <img
-          ref={deviceImageRef}
-          src="/assets/images/lambda_health_system2.webp"
-          alt="Lambda Therapy Robot"
-          className="device-image"
+        <div
+          className="zoom-container"
           style={{
             transform: `scale(${zoomLevel}) translate(${position.x / zoomLevel}px, ${position.y / zoomLevel}px)`,
             transition: 'transform 1.2s ease-in-out',
+            transformOrigin: 'center center',
           }}
-        />
-        {deviceComponents.map(h => (
-          <button
-            key={h.id}
-            data-id={h.id}
-            className={`hotspot ${activeLabel === h.id ? 'active' : ''}`}
-            style={{
-              top: h.position.top,
-              left: h.position.left,
-              opacity: activeLabel && activeLabel !== h.id ? 0.5 : 1,
-              transform: `translate(-50%, -50%) scale(${1 / zoomLevel})`,
-              transformOrigin: 'center center'
-            }}
-            onClick={() => {
-              setActiveLabel(h.id === activeLabel ? null : h.id);
-              setIsAutoZooming(false);
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
-          >
-            <span className="marker"></span>
-            <span className="hotspot-pulse"></span>
-            <span className="hotspot-tooltip">{h.name}</span>
-          </button>
-        ))}
+        >
+          <img
+            ref={deviceImageRef}
+            src="/assets/images/lambda_health_system2.webp"
+            alt="Lambda Therapy Robot"
+            className="device-image"
+          />
+          {deviceComponents.map(h => (
+            <button
+              key={h.id}
+              data-id={h.id}
+              className={`hotspot ${activeLabel === h.id ? 'active' : ''}`}
+              style={{
+                top: h.position.top,
+                left: h.position.left,
+                opacity: activeLabel && activeLabel !== h.id ? 0.5 : 1,
+              }}
+              onClick={() => {
+                setIsTourPaused(true);
+                setManualScrollOverride(true);
+                setActiveLabel(h.id === activeLabel ? null : h.id);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            >
+              <span className="marker"></span>
+              <span className="hotspot-pulse"></span>
+              <span className="hotspot-tooltip">{h.name}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {clickPosition && (
@@ -454,6 +479,44 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
 
       {activeLabel && (
         <div className="modal-overlay" onClick={() => setActiveLabel(null)}>
+          {isTourActive && (
+            <div className="tour-controls">
+              {isTourPaused ? (
+                <button
+                  className="resume-tour"
+                  onClick={() => {
+                    setIsTourPaused(false);
+                    setManualScrollOverride(false);
+                  }}
+                >▶ Resume Tour</button>
+              ) : (
+                <button
+                  className="pause-tour"
+                  onClick={() => {
+                    clearTimeout(tourTimerRef.current);
+                    setIsTourPaused(true);
+                  }}
+                >⏸ Pause Tour</button>
+              )}
+              <button
+                className="skip-tour"
+                onClick={() => {
+                  clearTimeout(tourTimerRef.current);
+                  setTourIndex(i => Math.min(i + 1, deviceComponents.length - 1));
+                  setManualScrollOverride(false);
+                }}
+              >⏭ Skip Step</button>
+              <button
+                className="restart-tour"
+                onClick={() => {
+                  clearTimeout(tourTimerRef.current);
+                  setTourIndex(0);
+                  setManualScrollOverride(false);
+                }}
+              >🔁 Restart Tour</button>
+            </div>
+          )}
+
           <div className="modal-content" ref={modalRef} onClick={e => e.stopPropagation()}>
             <button className="modal-close" onClick={() => setActiveLabel(null)}>✕</button>
             <div className="modal-header">
