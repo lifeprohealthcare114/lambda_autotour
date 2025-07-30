@@ -276,7 +276,7 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
     if (startTour) {
       const timer = setTimeout(() => {
         setIsTourActive(true);
-      }, 500);
+      }, 6000);
       return () => clearTimeout(timer);
     }
   }, [startTour]);
