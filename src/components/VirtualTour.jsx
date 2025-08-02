@@ -1,6 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import '../styles/VirtualTour.css';
 import Loader from '../components/Loader';
+
+import { useInView } from 'react-intersection-observer'; // ✅ Added for lazy load
+
 const deviceComponents = [
   {
     id: 'display',
@@ -239,8 +242,8 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
   const [tourIndex, setTourIndex] = useState(0);
   const [clickPosition, setClickPosition] = useState(null);
   const [manualScrollOverride, setManualScrollOverride] = useState(false);
-    const [imageLoading, setImageLoading] = useState(true); // ✅ For main image
-  const [modalMediaLoading, setModalMediaLoading] = useState(true); // ✅ For modal media
+  const [imageLoading, setImageLoading] = useState(true);
+  const [modalMediaLoading, setModalMediaLoading] = useState(true);
 
   const deviceImageRef = useRef(null);
   const deviceViewRef = useRef(null);
@@ -248,6 +251,11 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
   const tourTimerRef = useRef(null);
   const lastInteractionRef = useRef(Date.now());
   const inactivityTimerRef = useRef(null);
+
+  const [refInView, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
 
   useEffect(() => {
     const resetTimer = () => {
@@ -425,7 +433,7 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
     }
   }, [tourIndex, isTourActive, isTourPaused, runTourStep]);
 
-   const handleMouseDown = (e) => {
+  const handleMouseDown = (e) => {
     if (zoomLevel > 1) {
       setIsDragging(true);
       setStartPos({ x: e.clientX - position.x, y: e.clientY - position.y });
@@ -473,13 +481,13 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
             transformOrigin: 'center center',
           }}
         >
-          {imageLoading && <Loader />} {/* ✅ Loader for main image */}
+          {imageLoading && <Loader />}
           <img
             ref={deviceImageRef}
             src="/assets/images/lambda_health_system2.webp"
             alt="Lambda Therapy Robot"
             className="device-image"
-            onLoad={() => setImageLoading(false)} // ✅ hide loader on load
+            onLoad={() => setImageLoading(false)}
           />
 
           {deviceComponents.map(h => (
@@ -496,12 +504,11 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
                 setIsTourPaused(true);
                 setManualScrollOverride(true);
                 setActiveLabel(h.id === activeLabel ? null : h.id);
-                setModalMediaLoading(true); // ✅ reset modal media loading
+                setModalMediaLoading(true);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
             >
               <span className="marker"></span>
-           
               <span className="hotspot-tooltip">{h.name}</span>
             </button>
           ))}
@@ -561,9 +568,16 @@ const VirtualTour = ({ onTourEnd, startTour }) => {
               <h3>{deviceComponents.find(h => h.id === activeLabel)?.name}</h3>
               <p>{deviceComponents.find(h => h.id === activeLabel)?.description}</p>
             </div>
-            {modalMediaLoading && <Loader />} {/* ✅ Loader for modal media */}
-            <div onLoad={() => setModalMediaLoading(false)} onLoadedData={() => setModalMediaLoading(false)}>
-              {deviceComponents.find(h => h.id === activeLabel)?.details}
+            <div ref={refInView}>
+              {modalMediaLoading && <Loader />}
+              {inView && (
+                <div
+                  onLoad={() => setModalMediaLoading(false)}
+                  onLoadedData={() => setModalMediaLoading(false)}
+                >
+                  {deviceComponents.find(h => h.id === activeLabel)?.details}
+                </div>
+              )}
             </div>
           </div>
         </div>
