@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import '../styles/VirtualTour.css';
 import Loader from '../components/Loader';
 
-import { useInView } from 'react-intersection-observer'; // ✅ Added for lazy load
+import { useInView } from 'react-intersection-observer'; 
 
 const deviceComponents = [
   {

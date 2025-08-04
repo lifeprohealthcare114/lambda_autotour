@@ -456,7 +456,8 @@
   }
   
   .tour-controls {
-    left: 300px;
+            left: 14px;
+        top: 1px;
   }
 }
 
@@ -707,12 +708,11 @@
   }
   
   .tour-controls {
-    left: 5px;
-    top: 60px;
+            left: 5px;
+        top: 2px;
   }
-  
-  .pause-tour,
-  .resume-tour {
+  .tour-controls button 
+ {
     padding: 4px 8px;
     font-size: 11px;
   }
