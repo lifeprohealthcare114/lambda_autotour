@@ -953,3 +953,63 @@
     scroll-padding: 0 1rem;
   }
 }
+@media (max-width: 1024px) {
+  .scrollable-horizontal {
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  .scrollable-horizontal .specs-grid {
+    display: inline-flex;
+    gap: 1rem;
+    min-width: 1200px; /* force horizontal scroll */
+  }
+
+  .spec-item {
+    min-width: 200px;
+  }
+}
+
+.tour-control-buttons {
+  position: fixed;
+  top: 14%;
+  right: 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  transform: translateY(-50%);
+  z-index: 1000;
+}
+
+.tour-control-buttons button {
+  padding: 10px 16px;
+  font-weight: bold;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+  transition: background-color 0.3s ease;
+  color: white;
+  width: max-content;
+  min-width: 120px;
+  text-align: center;
+}
+
+/* Stop Tour button styling (red) */
+.stop-tour-btn {
+  background-color: #d63939;
+}
+
+.stop-tour-btn:hover:enabled {
+  background-color: #ac2e2e;
+}
+
+/* Restart Tour button styling (green) */
+.restart-tour-btn {
+  background-color: #39a83c;
+}
+
+.restart-tour-btn:hover:enabled {
+  background-color: #2e8430;
+}

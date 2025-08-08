@@ -11,7 +11,7 @@ const technicalSpecs = [
   { name: "Patient Weight Capacity", value: "150 kg" },
   { name: "Warranty", value: "2 years" },
   { name: "Data Connectivity", value: "Wi-Fi, Bluetooth, USB" },
-  { name: "Display", value: "15.6\" HD Touchscreen" },
+  { name: "Display", value: '15.6" HD Touchscreen' },
   { name: "Setup Time", value: "<3 minutes" },
   { name: "Patient Throughput", value: "50+/week" }
 ];
@@ -21,7 +21,7 @@ const ProductExplorer = () => {
   const [selectedFeature, setSelectedFeature] = useState(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [startTour, setStartTour] = useState(false);
-  const [, setScrollingDown] = useState(false);
+  const [tourStopped, setTourStopped] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -30,9 +30,16 @@ const ProductExplorer = () => {
       marker.style.animation = `pulse 2s ${index * 0.2}s 3`;
     });
 
-    // Start the tour immediately on load
-    setStartTour(true);
-  }, []);
+    if (!tourStopped) {
+      const timer = setTimeout(() => {
+        setStartTour(true);
+      }, 6000);
+
+      return () => clearTimeout(timer);
+    } else {
+      setStartTour(false);
+    }
+  }, [tourStopped]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,32 +52,107 @@ const ProductExplorer = () => {
   const closePartDetails = () => setSelectedPart(null);
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  const handleTourEnd = () => {
-    setScrollingDown(true);
+  const handleTourEnd = async () => {
+    const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
-    // Scroll to bottom smoothly
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    let currentScroll = window.scrollY;
+    const maxScroll = document.body.scrollHeight - window.innerHeight;
 
-    const check = setInterval(() => {
-      if (window.innerHeight + window.scrollY >= document.body.scrollHeight - 5) {
-        clearInterval(check);
+    while (currentScroll < maxScroll) {
+      window.scrollBy(0, 5);
+      currentScroll += 5;
+      await delay(10);
+    }
 
-        // Wait for 6 seconds before scrolling up and navigating home
-        setTimeout(() => {
-          setScrollingDown(false);
-          scrollToTop();
+    const isMobileOrTablet = window.innerWidth <= 1024;
+    if (isMobileOrTablet) {
+      const horizontalContainer = document.querySelector('.scrollable-horizontal');
 
-          // Optional: wait 1 second after scrolling up before navigating
-          setTimeout(() => {
-            window.dispatchEvent(new CustomEvent('navigate-home'));
-          }, 1000);
-        }, 6000); // 6 second delay
+      if (horizontalContainer && horizontalContainer.scrollWidth > horizontalContainer.clientWidth) {
+        let scrollLeft = horizontalContainer.scrollLeft;
+        const maxScrollLeft = horizontalContainer.scrollWidth - horizontalContainer.clientWidth;
+
+        while (scrollLeft < maxScrollLeft) {
+          horizontalContainer.scrollBy({ left: 2, behavior: 'auto' });
+          scrollLeft += 2;
+          await delay(15);
+        }
+
+        await delay(1000);
       }
-    }, 300);
+    }
+
+    await delay(6000);
+    scrollToTop();
+
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('navigate-home'));
+    }, 1000);
+  };
+
+  const stopTour = () => {
+    setStartTour(false);
+    setTourStopped(true);
+  };
+
+  const restartTour = () => {
+    setTourStopped(false);
+    setStartTour(false);
+    setTimeout(() => setStartTour(true), 100);
   };
 
   return (
     <div className="product-explorer fade-in" ref={containerRef}>
+
+      {/* Tour Control Buttons - Fixed top right */}
+      <div
+        className="tour-controls-permanent"
+        style={{
+          position: 'fixed',
+          top: 64,
+          right: 38,
+          zIndex: 10000,
+          background: 'rgba(0,0,0,0.85)',
+          padding: '4px 6px',
+          borderRadius: 8,
+          display: 'flex',
+          gap: 10,
+          alignItems: 'center',
+        }}
+      >
+        <button
+          onClick={stopTour}
+          disabled={!startTour}
+          style={{
+            backgroundColor: '#e74c3c',
+            color: 'white',
+            border: 'none',
+            padding: '8px 12px',
+            borderRadius: 5,
+            cursor: startTour ? 'pointer' : 'not-allowed',
+            opacity: startTour ? 1 : 0.6,
+          }}
+          aria-label="Stop Tour"
+        >
+          ■ Stop Tour
+        </button>
+
+        <button
+          onClick={restartTour}
+          style={{
+            backgroundColor: '#2ecc71',
+            color: 'white',
+            border: 'none',
+            padding: '8px 12px',
+            borderRadius: 5,
+            cursor: 'pointer',
+          }}
+          aria-label="Restart Tour"
+        >
+          🔄 Restart Tour
+        </button>
+      </div>
+
       <section className="product-overview">
         <div className="product-header">
           <h2>Lambda Therapy Robot</h2>
@@ -78,7 +160,7 @@ const ProductExplorer = () => {
         </div>
 
         <div className="product-visualization">
-          <VirtualTour onTourEnd={handleTourEnd} startTour={startTour} />
+          <VirtualTour onTourEnd={handleTourEnd} startTour={startTour && !tourStopped} isStopped={tourStopped} />
 
           <div className="product-info">
             <h3>Advanced Rehabilitation Technology</h3>
@@ -95,14 +177,10 @@ const ProductExplorer = () => {
       <section className="technical-specs">
         <h2 className="section-title">Technical Specifications</h2>
         <p className="subtitle">Precision engineering for clinical environments</p>
-        <div className="specs-container">
+        <div className="specs-container scrollable-horizontal">
           <div className="specs-grid">
             {technicalSpecs.map((spec, index) => (
-              <div 
-                key={index} 
-                className="spec-item"
-                style={{ animationDelay: `${4000 + index * 100}ms` }}
-              >
+              <div key={index} className="spec-item" style={{ animationDelay: `${4000 + index * 100}ms` }}>
                 <div className="spec-name">{spec.name}</div>
                 <div className="spec-value">{spec.value}</div>
               </div>
@@ -114,13 +192,10 @@ const ProductExplorer = () => {
       {selectedPart && <PartModal part={selectedPart} onClose={closePartDetails} />}
       {selectedFeature && <FeaturesModal feature={selectedFeature} onClose={() => setSelectedFeature(null)} />}
 
-      <button 
-        className={`back-to-top ${showBackToTop ? 'visible' : ''}`}
-        onClick={scrollToTop}
-        aria-label="Back to top"
-      >
+      <button className={`back-to-top ${showBackToTop ? 'visible' : ''}`} onClick={scrollToTop} aria-label="Back to top">
         ↑
       </button>
+
     </div>
   );
 };

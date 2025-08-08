@@ -33,13 +33,13 @@ const HeroSection = ({ navigateTo }) => {
   }, [isMobileView]);
 
   const handleVideoEnd = () => {
-    // Trigger fade-out animation
+    // fade-out animation
     setFadeOut(true);
 
     // Wait for animation to finish before navigating
     setTimeout(() => {
       navigateTo('product', { startTour: true });
-    }, 1000); // match the CSS transition duration
+    }, 1000); 
   };
 
   return (

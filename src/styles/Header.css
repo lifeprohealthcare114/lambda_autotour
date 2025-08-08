@@ -10,7 +10,7 @@
 }
 
 .header.scrolled {
- background-color: #2c3e50;
+  background-color: #2c3e50;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   padding: 0.5rem 0;
 }
@@ -30,6 +30,14 @@
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-img {
+  height: 32px;
+  width: auto;
 }
 
 .header-logo:hover {
@@ -40,16 +48,6 @@
   outline: 2px solid white;
   outline-offset: 4px;
 }
-
-@media (max-width: 768px) {
-  .header-container {
-    padding: 0 1rem;
-  }
-  
-  .header-logo {
-    font-size: 1.3rem;
-  }
-}/* Add these styles to Header.css */
 
 .skip-tour-button {
   background-color: transparent;
@@ -74,19 +72,31 @@
 }
 
 @media (max-width: 768px) {
+  .header-container {
+    padding: 0 1rem;
+  }
+  .header-logo {
+    font-size: 1.3rem;
+  }
   .skip-tour-button {
     padding: 0.4rem 0.8rem;
     font-size: 0.8rem;
   }
 }
-.header-logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .skip-tour-button {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+  }
+  .header-logo {
+    font-size: 1rem;
+  }
 }
 
-.logo-img {
-  height: 32px;
-  width: auto;
+/* Additional Utility */
+.hero.fade-out {
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+  pointer-events: none;
 }

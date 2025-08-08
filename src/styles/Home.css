@@ -1,15 +1,14 @@
 /* Home.css */
 .home {
   width: 100%;
-  overflow: hidden; /* Disable scrolling by default for all devices */
+  overflow: hidden;
 }
 
-/* Enable scrolling only for mobile and tablet devices */
 @media only screen and (max-width: 1024px) {
   .home {
-    overflow: auto; /* Enable scrolling */
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-    height: 100vh; /* Ensure full viewport height */
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    height: 100vh;
   }
 }
 
@@ -46,13 +45,13 @@
 }
 
 .hero-content h1 {
-  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-size: clamp(2rem, 6vw, 3.5rem);
   margin-bottom: 1rem;
   animation: fadeInDown 1s ease;
 }
 
 .hero-content p {
-  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
   margin-bottom: 1.5rem;
   animation: fadeInUp 1s ease;
   animation-delay: 0.3s;
@@ -108,60 +107,43 @@
   }
 }
 
-/* Mobile-specific adjustments */
 @media (max-width: 768px) {
   .hero-section {
     min-height: 600px;
   }
-  
   .hero-content {
     width: 95%;
     padding: 15px;
   }
-  
-  .hero-content h1 {
-    margin-bottom: 0.5rem;
-  }
-  
-  .hero-content p {
-    margin-bottom: 1rem;
-  }
-  
   .explore-button {
     padding: 0.7rem 1.5rem;
   }
 }
 
-/* Very small screens */
 @media (max-width: 480px) {
   .hero-section {
     min-height: 500px;
   }
-  
-  .hero-content p {
-    margin-bottom: 0.8rem;
-  }
-  
   .explore-button {
     width: 100%;
     max-width: 200px;
   }
 }
 
-/* Landscape orientation adjustments */
 @media (max-height: 500px) and (orientation: landscape) {
   .hero-section {
-    height: 150vh;
+    height: 200vh;
   }
-  
   .hero-content {
     top: 60%;
   }
 }
 
-/* Tablet adjustments */
-@media (min-width: 769px) and (max-width: 1024px) {
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+  .hero-section {
+    height: 150vh;
+  }
   .hero-content {
-    width: 85%;
+    top: 55%;
   }
 }

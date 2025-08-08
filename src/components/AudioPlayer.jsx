@@ -21,7 +21,7 @@ const AudioPlayer = () => {
       audio.pause();
       // Removed the undefined handleEnded reference
       if (audioRef.current) {
-        audioRef.current.src = ''; // Clean up audio object
+        audioRef.current.src = ''; // Clean up audio
       }
     };
   }, []);
