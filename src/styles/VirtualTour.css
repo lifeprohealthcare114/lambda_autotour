@@ -38,7 +38,7 @@
 /* Device View Container */
 .device-view {
   position: relative;
-  background: #f8f9fa;
+  background: #00000069;
   border-radius: clamp(8px, 2vw, 12px);
   overflow: hidden;
   transition: all 0.3s ease;
@@ -113,7 +113,7 @@
   color: white;
   padding: clamp(3px, 1vw, 4px) clamp(6px, 2vw, 8px);
   border-radius: clamp(3px, 1vw, 4px);
-  font-size: clamp(0.6rem, 2vw, 0.7rem);
+  font-size: clamp(0.8rem, 2vw, 0.7rem);
   white-space: nowrap;
   opacity: 1;
   visibility: visible;
@@ -271,8 +271,8 @@
 /* Tour Controls */
 .tour-controls {
   position: fixed;
-  top: clamp(10px, 2vh, 15px);
-  left: 50%;
+  top: clamp(10px, 6vh, 63px);
+  left: 14%;
   transform: translateX(-50%);
   z-index: 1001;
   pointer-events: auto;
@@ -282,7 +282,7 @@
   align-items: center;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
-  padding: clamp(6px, 1.5vw, 12px) clamp(12px, 3vw, 24px);
+  padding: clamp(4px, 1.5vw, 8px) clamp(0px, 1vw, 12px);
   border-radius: clamp(6px, 2vw, 12px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.2);
@@ -705,7 +705,7 @@
   .tour-controls {
     position: fixed;
     top: clamp(5px, 1.5vh, 10px);
-    left: 50%;
+    left: 20%;
     transform: translateX(-50%);
     flex-wrap: wrap;
     max-width: 95vw;
@@ -743,6 +743,7 @@
 @media (max-width: 640px) {
   .modal-overlay {
     padding: clamp(0.25rem, 1vw, 0.5rem);
+    top: 60px;
   }
   
   .modal-content {
@@ -752,7 +753,7 @@
   }
   
   .tour-controls {
-    top: clamp(3px, 1vh, 5px);
+    top: clamp(3px, 6vh, 40px);
     gap: clamp(3px, 1vw, 6px);
     padding: clamp(3px, 1vw, 6px) clamp(6px, 2vw, 10px);
     border-radius: 4px;
@@ -880,10 +881,11 @@
   }
   
   .tour-controls {
-    top: clamp(2px, 0.8vh, 3px);
+    top: clamp(31px, 0.8vh, 3px);
     padding: clamp(2px, 0.8vw, 4px) clamp(4px, 1.5vw, 8px);
     gap: clamp(2px, 0.8vw, 4px);
     border-radius: 3px;
+    left: 145px;
   }
   
   .pause-tour,
@@ -1021,8 +1023,8 @@
   }
   
   .tour-controls button {
-    min-height: 44px;
-    min-width: 44px;
+    min-height: 25px;
+    min-width: 25px;
     padding: clamp(10px, 2.5vw, 14px) clamp(14px, 3.5vw, 20px);
   }
 }
@@ -1365,4 +1367,28 @@
     flex-direction: column;
     text-align: center;
   }
+  
+}
+@media (max-width: 767px) {
+  .hotspot .hotspot-tooltip {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  
+    .hotspot:hover .hotspot-tooltip,
+  .hotspot:focus .hotspot-tooltip,
+  .hotspot:active .hotspot-tooltip {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+}
+.tour-controls1 {
+  position: absolute;
+  top: 20px;
+  right: 10px;
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
 }

@@ -1013,3 +1013,47 @@
 .restart-tour-btn:hover:enabled {
   background-color: #2e8430;
 }
+/* Stop and Restart Buttons */
+.tour-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.tour-button {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.25s ease, transform 0.15s ease;
+}
+
+/* Stop button */
+.tour-button.stop {
+  background-color: #dc2626; /* red-600 */
+  color: #fff;
+}
+
+.tour-button.stop:hover {
+  background-color: #b91c1c; /* darker red */
+}
+
+.tour-button.stop:active {
+  transform: scale(0.97);
+}
+
+/* Restart button */
+.tour-button.restart {
+  background-color: #16a34a; /* green-600 */
+  color: #fff;
+}
+
+.tour-button.restart:hover {
+  background-color: #15803d; /* darker green */
+}
+
+.tour-button.restart:active {
+  transform: scale(0.97);
+}

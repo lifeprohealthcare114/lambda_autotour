@@ -104,53 +104,9 @@ const ProductExplorer = () => {
   return (
     <div className="product-explorer fade-in" ref={containerRef}>
 
-      {/* Tour Control Buttons - Fixed top right */}
-      <div
-        className="tour-controls-permanent"
-        style={{
-          position: 'fixed',
-          top: 64,
-          right: 38,
-          zIndex: 10000,
-          background: 'rgba(0,0,0,0.85)',
-          padding: '4px 6px',
-          borderRadius: 8,
-          display: 'flex',
-          gap: 10,
-          alignItems: 'center',
-        }}
-      >
-        <button
-          onClick={stopTour}
-          disabled={!startTour}
-          style={{
-            backgroundColor: '#e74c3c',
-            color: 'white',
-            border: 'none',
-            padding: '8px 12px',
-            borderRadius: 5,
-            cursor: startTour ? 'pointer' : 'not-allowed',
-            opacity: startTour ? 1 : 0.6,
-          }}
-          aria-label="Stop Tour"
-        >
-          ■ Stop Tour
-        </button>
-
-        <button
-          onClick={restartTour}
-          style={{
-            backgroundColor: '#2ecc71',
-            color: 'white',
-            border: 'none',
-            padding: '8px 12px',
-            borderRadius: 5,
-            cursor: 'pointer',
-          }}
-          aria-label="Restart Tour"
-        >
-          🔄 Restart Tour
-        </button>
+      <div className="tour-controls">
+        <button className="tour-button stop" onClick={stopTour}>Stop</button>
+        <button className="tour-button restart" onClick={restartTour}>Restart</button>
       </div>
 
       <section className="product-overview">

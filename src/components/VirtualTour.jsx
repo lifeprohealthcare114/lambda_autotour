@@ -62,7 +62,7 @@ const deviceComponents = [
   },
   {
     id: 'visualization',
-    name: 'Patient Visualization Screen',
+    name: 'Visualization Screen',
     position: { top: '34%', left: '60%' },
     details: (
       <div className="detail-content">
@@ -117,7 +117,7 @@ const deviceComponents = [
   },
   {
     id: 'pedals',
-    name: 'Adjustable Pedals',
+    name: 'Pedals',
     position: { top: '66%', left: '57%' },
     details: (
       <div className="detail-content">
@@ -157,7 +157,7 @@ const deviceComponents = [
   },
   {
     id: 'seat',
-    name: '360° Rotating Seat',
+    name: '360° Seat',
     position: { top: '60%', left: '69%' },
     details: (
       <div className="detail-content">
@@ -184,7 +184,7 @@ const deviceComponents = [
   },
   {
     id: 'sensors',
-    name: 'Precision Sensors',
+    name: 'Sensors',
     position: { top: '55%', left: '58%' },
     details: (
       <div className="detail-content">
@@ -256,7 +256,6 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
     threshold: 0.1,
   });
 
-  // reset inactivity timer logic (stops if isStopped)
   useEffect(() => {
     if (isStopped) return;
 
@@ -282,7 +281,6 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
     };
   }, [isTourPaused, isStopped]);
 
-  // === PERSISTENT AUTO-ZOOM EFFECT ===
   // Always run zoom effect regardless of tour state
   useEffect(() => {
     autoZoomIntervalRef.current = setInterval(() => {
@@ -311,7 +309,6 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
       setPosition({ x: 0, y: 0 });
       setTourIndex(0);
       setManualScrollOverride(false);
-      // Note: Do NOT reset zoomLevel here to keep zoom effect visible
     }
   }, [isStopped]);
 
@@ -327,7 +324,6 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
     }
   }, [startTour, isStopped]);
 
-  // Remaining logic unchanged (estimateReadingTime, waitForVideoEnd, autoScrollModal, runTourStep, etc.)
 
   const estimateReadingTime = useCallback(() => {
     if (!modalRef.current) return 3000;
@@ -555,7 +551,7 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
         <div className="modal-overlay" onClick={() => setActiveLabel(null)}>
           {isTourActive && (
             <div
-              className="tour-controls"
+              className="tour-controls1"
               onClick={(e) => e.stopPropagation()}
             >
               <button
