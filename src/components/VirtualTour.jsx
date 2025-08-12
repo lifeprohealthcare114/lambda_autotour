@@ -65,10 +65,22 @@ const deviceComponents = [
     id: 'visualization',
     name: 'Visualization Screen',
     position: { top: '34%', left: '60%' },
-    details: (
+    details: (activeLabel) => (
       <div className="detail-content">
         <div className="media-container">
-          <video src="/assets/videos/visualization.mp4" controls autoPlay muted loop playsInline />
+          <video
+            controls
+            autoPlay={activeLabel === 'visualization'}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster="/assets/images/visualization-poster.jpg"
+          >
+            <source src="/assets/videos/visualization1.webm" type="video/webm" />
+            <source src="/assets/videos/visualization.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         </div>
         <div className="text-content">
           <h4>Therapy Visualization Features:</h4>
@@ -120,18 +132,21 @@ const deviceComponents = [
     id: 'pedals',
     name: 'Pedals',
     position: { top: '66%', left: '57%' },
-    details: (
+    details: (activeLabel) => (
       <div className="detail-content">
         <div className="media-container">
           <video
             controls
-            autoPlay
+            autoPlay={activeLabel === 'pedals'}
             muted
             loop
             playsInline
+            preload="metadata"
             poster="/assets/images/pedals-poster.jpg"
           >
-            <source src="/assets/videos/pendal.mp4" type="video/mp4" />
+            <source src="/assets/videos/Pendal1.webm" type="video/webm" />
+            <source src="/assets/videos/pedals.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
           </video>
         </div>
         <div className="text-content">
@@ -160,10 +175,22 @@ const deviceComponents = [
     id: 'seat',
     name: '360° Seat',
     position: { top: '60%', left: '69%' },
-    details: (
+    details: (activeLabel) => (
       <div className="detail-content">
         <div className="media-container">
-          <video src="/assets/videos/seat-rotation.mp4" controls autoPlay muted loop playsInline />
+          <video
+            controls
+            autoPlay={activeLabel === 'seat'}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster="/assets/images/seat-poster.jpg"
+          >
+            <source src="/assets/videos/Seat-Rotation1.webm" type="video/webm" />
+            <source src="/assets/videos/seat-rotation.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         </div>
         <div className="text-content">
           <h4>Features:</h4>
@@ -187,18 +214,22 @@ const deviceComponents = [
     id: 'sensors',
     name: 'Sensors',
     position: { top: '55%', left: '58%' },
-    details: (
+    details: (activeLabel) => (
       <div className="detail-content">
         <div className="media-container">
           <video
-            src="/assets/videos/sensors.mp4"
             controls
-            autoPlay
+            autoPlay={activeLabel === 'sensors'}
             muted
             loop
             playsInline
+            preload="metadata"
             poster="/assets/images/sensors-poster.jpg"
-          />
+          >
+            <source src="/assets/videos/sensors.webm" type="video/webm" />
+            <source src="/assets/videos/sensors.mp4" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
         </div>
         <div className="text-content">
           <h4>Biomechanical Measurement System</h4>
@@ -586,7 +617,6 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
                   if (!isTourPaused) {
                     setIsTourPaused(true);
                   }
-                  // do NOT set any scroll override here, allow manual scrolling always
                   setActiveLabel(h.id);
                   setModalMediaLoading(true);
                   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -614,7 +644,6 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
           <div className="modal-content" ref={modalRef} onClick={e => e.stopPropagation()} tabIndex={-1}>
             <button className="modal-close" onClick={() => setActiveLabel(null)} aria-label="Close modal">✕</button>
 
-            {/* Skip Button - Only show during active tour */}
             {isTourActive && !isTourPaused && (
               <button
                 className="skip-button"
@@ -639,7 +668,11 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
                   onLoad={() => setModalMediaLoading(false)}
                   onLoadedData={() => setModalMediaLoading(false)}
                 >
-                  {deviceComponents.find(h => h.id === activeLabel)?.details}
+                  {/* Pass activeLabel if details is a function */}
+                  {typeof deviceComponents.find(h => h.id === activeLabel)?.details === 'function' ?
+                    deviceComponents.find(h => h.id === activeLabel)?.details(activeLabel) :
+                    deviceComponents.find(h => h.id === activeLabel)?.details
+                  }
                 </div>
               )}
             </div>

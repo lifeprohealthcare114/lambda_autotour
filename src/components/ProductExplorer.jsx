@@ -22,6 +22,7 @@ const ProductExplorer = () => {
   const [showBackToTop, setShowBackToTop] = useState(false);
   const [startTour, setStartTour] = useState(false);
   const [tourStopped, setTourStopped] = useState(false);
+  const [resetTour, setResetTour] = useState(false);
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -53,7 +54,7 @@ const ProductExplorer = () => {
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   const handleTourEnd = async () => {
-    const delay = (ms) => new Promise(res => setTimeout(res, ms));
+    const delay = ms => new Promise(res => setTimeout(res, ms));
 
     let currentScroll = window.scrollY;
     const maxScroll = document.body.scrollHeight - window.innerHeight;
@@ -91,14 +92,22 @@ const ProductExplorer = () => {
   };
 
   const stopTour = () => {
+    setResetTour(false);  // Cancel any resetting in progress
     setStartTour(false);
     setTourStopped(true);
   };
 
   const restartTour = () => {
     setTourStopped(false);
+
+    // Trigger resetTour flag to reset VirtualTour internal state and timers
+    setResetTour(true);
+
     setStartTour(false);
-    setTimeout(() => setStartTour(true), 100);
+    setTimeout(() => {
+      setStartTour(true);
+      setResetTour(false);
+    }, 100);
   };
 
   return (
@@ -115,7 +124,12 @@ const ProductExplorer = () => {
         </div>
 
         <div className="product-visualization">
-          <VirtualTour onTourEnd={handleTourEnd} startTour={startTour && !tourStopped} isStopped={tourStopped} />
+          <VirtualTour
+            onTourEnd={handleTourEnd}
+            startTour={startTour && !tourStopped}
+            isStopped={tourStopped}
+            resetTour={resetTour}
+          />
 
           <div className="product-info">
             <h3>Advanced Rehabilitation Technology</h3>
@@ -147,7 +161,11 @@ const ProductExplorer = () => {
       {selectedPart && <PartModal part={selectedPart} onClose={closePartDetails} />}
       {selectedFeature && <FeaturesModal feature={selectedFeature} onClose={() => setSelectedFeature(null)} />}
 
-      <button className={`back-to-top ${showBackToTop ? 'visible' : ''}`} onClick={scrollToTop} aria-label="Back to top">
+      <button
+        className={`back-to-top ${showBackToTop ? 'visible' : ''}`}
+        onClick={scrollToTop}
+        aria-label="Back to top"
+      >
         ↑
       </button>
     </div>
