@@ -44,7 +44,7 @@
   transition: all 0.3s ease;
   touch-action: none;
   box-shadow: 0 clamp(5px, 2vw, 10px) clamp(15px, 4vw, 30px) rgba(0,0,0,0.1);
-  width: 100%;
+  width: 96%;
   max-width: 100%;
 }
 
@@ -271,8 +271,8 @@
 /* Tour Controls */
 .tour-controls {
   position: fixed;
-  top: clamp(10px, 6vh, 63px);
-  left: 14%;
+  top: clamp(10px, 7vh, 63px);
+  left: 53%;
   transform: translateX(-50%);
   z-index: 1001;
   pointer-events: auto;
@@ -280,13 +280,13 @@
   gap: clamp(8px, 2vw, 20px);
   justify-content: center;
   align-items: center;
-  background: rgba(255, 255, 255, 0.95);
+  background: rgb(255 255 255 / 0%);
   backdrop-filter: blur(10px);
   padding: clamp(4px, 1.5vw, 8px) clamp(0px, 1vw, 12px);
   border-radius: clamp(6px, 2vw, 12px);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  max-width: 95vw;
+  max-width: 82vw;
   flex-wrap: wrap;
 }
 
@@ -372,10 +372,11 @@
 
 .media-container img,
 .media-container video {
-  width: 100%;
+  width: 60%;
   max-height: clamp(200px, 35vh, 300px);
   object-fit: cover;
   display: block;
+  margin: 0 auto;
   border-radius: 0;
 }
 
@@ -704,8 +705,8 @@
 @media (max-width: 768px) {
   .tour-controls {
     position: fixed;
-    top: clamp(5px, 1.5vh, 10px);
-    left: 20%;
+    top: clamp(36px, 1.5vh, 10px);
+    left: 52%;
     transform: translateX(-50%);
     flex-wrap: wrap;
     max-width: 95vw;
@@ -743,7 +744,7 @@
 @media (max-width: 640px) {
   .modal-overlay {
     padding: clamp(0.25rem, 1vw, 0.5rem);
-    top: 60px;
+    top: 48px;
   }
   
   .modal-content {
@@ -881,11 +882,11 @@
   }
   
   .tour-controls {
-    top: clamp(31px, 0.8vh, 3px);
+    top: clamp(32px, 0.8vh, 3px);
     padding: clamp(2px, 0.8vw, 4px) clamp(4px, 1.5vw, 8px);
     gap: clamp(2px, 0.8vw, 4px);
     border-radius: 3px;
-    left: 145px;
+    left: 172px;
   }
   
   .pause-tour,
@@ -1386,9 +1387,39 @@
 }
 .tour-controls1 {
   position: absolute;
-  top: 20px;
-  right: 10px;
+  top: 6px;
+  right: 290px;
   display: flex;
   gap: 10px;
   margin-top: 15px;
+}
+.skip-button {
+  position: absolute;
+  top: 10px;
+  right: 76px; /* space beside close button */
+  padding: 6px 14px;
+  font-size: 1rem;
+  background-color: #2c3e50;
+  border: none;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  user-select: none;
+  z-index: 12;
+  transition: background-color 0.2s ease;
+}
+
+.skip-button:hover,
+.skip-button:focus {
+  background-color: #2c3e50cc;
+  outline: none;
+}
+
+@media (max-width: 480px) {
+  .skip-button {
+    padding: 4px 10px;
+    font-size: 0.9rem;
+    right: 50px;
+    top: 8px;
+  }
 }

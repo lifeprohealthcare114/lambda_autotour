@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { motion } from 'framer-motion';
 import '../styles/VirtualTour.css';
 import Loader from '../components/Loader';
 
-import { useInView } from 'react-intersection-observer'; 
+import { useInView } from 'react-intersection-observer';
 
 const deviceComponents = [
   {
@@ -227,7 +228,6 @@ const deviceComponents = [
   }
 ];
 
-
 const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
   const [activeLabel, setActiveLabel] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(1);
@@ -239,9 +239,11 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
   const [isTourPaused, setIsTourPaused] = useState(false);
   const [tourIndex, setTourIndex] = useState(0);
   const [clickPosition, setClickPosition] = useState(null);
-  const [manualScrollOverride, setManualScrollOverride] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const [modalMediaLoading, setModalMediaLoading] = useState(true);
+
+  const [userScrolling, setUserScrolling] = useState(false);
+  const scrollTimeoutRef = useRef(null);
 
   const deviceImageRef = useRef(null);
   const deviceViewRef = useRef(null);
@@ -265,7 +267,7 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
     const checkInactivity = () => {
       if (isTourPaused && Date.now() - lastInteractionRef.current > 2 * 60 * 1000) {
         setIsTourPaused(false);
-        setManualScrollOverride(false);
+        setUserScrolling(false);
       }
     };
     document.addEventListener('mousemove', resetTimer);
@@ -281,7 +283,6 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
     };
   }, [isTourPaused, isStopped]);
 
-  // Always run zoom effect regardless of tour state
   useEffect(() => {
     autoZoomIntervalRef.current = setInterval(() => {
       setZoomLevel(prev => {
@@ -299,7 +300,7 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
 
     return () => clearInterval(autoZoomIntervalRef.current);
   }, [autoZoomDirection]);
-  
+
   useEffect(() => {
     if (isStopped) {
       clearTimeout(tourTimerRef.current);
@@ -308,7 +309,7 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
       setActiveLabel(null);
       setPosition({ x: 0, y: 0 });
       setTourIndex(0);
-      setManualScrollOverride(false);
+      setUserScrolling(false);
     }
   }, [isStopped]);
 
@@ -324,7 +325,7 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
     }
   }, [startTour, isStopped]);
 
-
+  // Estimate reading time of modal content to calculate tour step delay
   const estimateReadingTime = useCallback(() => {
     if (!modalRef.current) return 3000;
     const text = modalRef.current.innerText || '';
@@ -336,7 +337,7 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
     return Math.min(30000, Math.max(5000, readingTime + scrollTime));
   }, []);
 
-  const waitForVideoEnd = useCallback((element) => {
+  const waitForVideoEnd = useCallback(element => {
     return new Promise(resolve => {
       const video = element?.querySelector('video');
       if (video) {
@@ -354,15 +355,40 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
     });
   }, []);
 
+  // Handle modal scroll: set userScrolling true temporarily to pause auto-scroll only
+  const handleModalScroll = useCallback(() => {
+    setUserScrolling(true);
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    scrollTimeoutRef.current = setTimeout(() => {
+      setUserScrolling(false);
+    }, 2000);
+  }, []);
+
+  // Add/remove scroll event listener on modal
+  useEffect(() => {
+    const modal = modalRef.current;
+    if (modal) {
+      modal.addEventListener('scroll', handleModalScroll);
+      return () => {
+        modal.removeEventListener('scroll', handleModalScroll);
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      };
+    }
+  }, [handleModalScroll]);
+
+  // Auto-scroll modal content unless user is scrolling
   const autoScrollModal = useCallback(() => {
     return new Promise(resolve => {
-      if (!modalRef.current || modalRef.current.scrollHeight <= modalRef.current.clientHeight || manualScrollOverride)
+      if (!modalRef.current || modalRef.current.scrollHeight <= modalRef.current.clientHeight)
         return resolve();
+
+      if (userScrolling) return resolve(); // skip auto-scroll if user is scrolling
+
       const totalScroll = modalRef.current.scrollHeight - modalRef.current.clientHeight;
       const step = 1;
       let scrolled = 0;
       const interval = setInterval(() => {
-        if (!modalRef.current || scrolled >= totalScroll) {
+        if (!modalRef.current || scrolled >= totalScroll || userScrolling) {
           clearInterval(interval);
           resolve();
         } else {
@@ -371,8 +397,33 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
         }
       }, 15);
     });
-  }, [manualScrollOverride]);
+  }, [userScrolling]);
 
+  const handleSkipStep = useCallback(() => {
+    clearTimeout(tourTimerRef.current);
+    setActiveLabel(null);
+
+    const isLastStep = tourIndex === deviceComponents.length - 1;
+
+    if (!isLastStep) {
+      setTimeout(() => {
+        if (!isTourPaused && !isStopped) {
+          setTourIndex(i => i + 1);
+        }
+      }, 500);
+    } else {
+      setZoomLevel(1);
+      setPosition({ x: 0, y: 0 });
+      setTimeout(() => {
+        setIsTourActive(false);
+        if (typeof onTourEnd === 'function') {
+          setTimeout(onTourEnd, 500);
+        }
+      }, 1000);
+    }
+  }, [tourIndex, isTourPaused, isStopped, onTourEnd]);
+
+  // Run each tour step, showing hotspot modal and controls timing
   const runTourStep = useCallback(async () => {
     if (!isTourActive || isTourPaused || isStopped) return;
 
@@ -398,7 +449,7 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
           try {
             video.currentTime = 0;
             await video.play();
-          } catch (err) { }
+          } catch (err) {}
         }
 
         await waitForVideoEnd(modalRef.current);
@@ -447,12 +498,12 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
     runTourStep();
   }, [tourIndex, isTourActive, isTourPaused, isStopped, runTourStep]);
 
-  // Clean up timers on unmount
   useEffect(() => {
     return () => {
       clearTimeout(tourTimerRef.current);
       clearInterval(autoZoomIntervalRef.current);
       clearInterval(inactivityTimerRef.current);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     };
   }, []);
 
@@ -495,96 +546,90 @@ const VirtualTour = ({ onTourEnd, startTour, isStopped }) => {
         onMouseUp={() => setIsDragging(false)}
         onMouseLeave={() => setIsDragging(false)}
         style={{ cursor: isDragging ? 'grabbing' : zoomLevel > 1 ? 'grab' : 'default' }}
+        role="region"
+        aria-label="Virtual tour device view"
       >
-        <div
-          className="zoom-container"
-          style={{
-            transform: `scale(${zoomLevel}) translate(${position.x / zoomLevel}px, ${position.y / zoomLevel}px)`,
-            transition: 'transform 1.2s ease-in-out',
-            transformOrigin: 'center center',
-          }}
+        <motion.div
+          className="lambda-zoom-wrapper"
+          initial={{ scale: 1 }}
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 5, repeat: Infinity, repeatType: 'loop', ease: 'easeInOut' }}
         >
-          {imageLoading && <Loader />}
-          <img
-            ref={deviceImageRef}
-            src="/assets/images/lambda_health_system2.webp"
-            alt="Lambda Therapy Robot"
-            className="device-image"
-            onLoad={() => setImageLoading(false)}
-          />
+          <div
+            className="zoom-container"
+            style={{
+              transform: `scale(${zoomLevel}) translate(${position.x / zoomLevel}px, ${position.y / zoomLevel}px)`,
+              transition: 'transform 1.2s ease-in-out',
+              transformOrigin: 'center center',
+            }}
+          >
+            {imageLoading && <Loader />}
+            <img
+              ref={deviceImageRef}
+              src="/assets/images/lambda_health_system2.webp"
+              alt="Lambda Therapy Robot"
+              className="device-image"
+              onLoad={() => setImageLoading(false)}
+            />
 
-          {deviceComponents.map(h => (
-            <button
-              key={h.id}
-              data-id={h.id}
-              className={`hotspot ${activeLabel === h.id ? 'active' : ''}`}
-              style={{
-                top: h.position.top,
-                left: h.position.left,
-                opacity: activeLabel && activeLabel !== h.id ? 0.5 : 1,
-              }}
-              onClick={() => {
-                if (!isTourPaused) {
-                  setIsTourPaused(true);
-                }
-                setManualScrollOverride(true);
-                setActiveLabel(h.id);
-                setModalMediaLoading(true);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-            >
-              <span className="marker"></span>
-              <span className="hotspot-tooltip">{h.name}</span>
-            </button>
-          ))}
-        </div>
+            {deviceComponents.map(h => (
+              <button
+                key={h.id}
+                data-id={h.id}
+                className={`hotspot ${activeLabel === h.id ? 'active' : ''}`}
+                style={{
+                  top: h.position.top,
+                  left: h.position.left,
+                  opacity: activeLabel && activeLabel !== h.id ? 0.5 : 1,
+                }}
+                onClick={() => {
+                  if (!isTourPaused) {
+                    setIsTourPaused(true);
+                  }
+                  // do NOT set any scroll override here, allow manual scrolling always
+                  setActiveLabel(h.id);
+                  setModalMediaLoading(true);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                aria-label={`Show details for ${h.name}`}
+              >
+                <span className="marker" />
+                <span className="hotspot-tooltip">{h.name}</span>
+              </button>
+            ))}
+          </div>
+        </motion.div>
       </div>
 
       {clickPosition && (
         <div
           className="fake-click"
           style={{ left: `${clickPosition.x}px`, top: `${clickPosition.y}px` }}
+          aria-hidden="true"
         />
       )}
 
       {activeLabel && (
-        <div className="modal-overlay" onClick={() => setActiveLabel(null)}>
-          {isTourActive && (
-            <div
-              className="tour-controls1"
-              onClick={(e) => e.stopPropagation()}
-            >
+        <div className="modal-overlay" onClick={() => setActiveLabel(null)} role="dialog" aria-modal="true" aria-labelledby="modal-title">
+          <div className="modal-content" ref={modalRef} onClick={e => e.stopPropagation()} tabIndex={-1}>
+            <button className="modal-close" onClick={() => setActiveLabel(null)} aria-label="Close modal">✕</button>
+
+            {/* Skip Button - Only show during active tour */}
+            {isTourActive && !isTourPaused && (
               <button
-                className="skip-tour"
-                onClick={() => {
-                  clearTimeout(tourTimerRef.current);
-                  const isLastStep = tourIndex === deviceComponents.length - 1;
-
-                  if (isLastStep) {
-                    setActiveLabel(null);
-                    setIsTourActive(false);
-                    setZoomLevel(1);
-                    setPosition({ x: 0, y: 0 });
-
-                    if (typeof onTourEnd === 'function') {
-                      setTimeout(onTourEnd, 500);
-                    }
-                  } else {
-                    setTourIndex(i => i + 1);
-                  }
-
-                  setManualScrollOverride(false);
+                className="skip-button"
+                onClick={e => {
+                  e.stopPropagation();
+                  handleSkipStep();
                 }}
+                aria-label="Skip this step"
               >
-                ⏭ Skip Step
+                Skip ▶
               </button>
-            </div>
-          )}
+            )}
 
-          <div className="modal-content" ref={modalRef} onClick={e => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setActiveLabel(null)}>✕</button>
             <div className="modal-header">
-              <h3>{deviceComponents.find(h => h.id === activeLabel)?.name}</h3>
+              <h3 id="modal-title">{deviceComponents.find(h => h.id === activeLabel)?.name}</h3>
               <p>{deviceComponents.find(h => h.id === activeLabel)?.description}</p>
             </div>
             <div ref={refInView}>

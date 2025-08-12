@@ -103,7 +103,6 @@ const ProductExplorer = () => {
 
   return (
     <div className="product-explorer fade-in" ref={containerRef}>
-
       <div className="tour-controls">
         <button className="tour-button stop" onClick={stopTour}>Stop</button>
         <button className="tour-button restart" onClick={restartTour}>Restart</button>
@@ -151,7 +150,6 @@ const ProductExplorer = () => {
       <button className={`back-to-top ${showBackToTop ? 'visible' : ''}`} onClick={scrollToTop} aria-label="Back to top">
         ↑
       </button>
-
     </div>
   );
 };
