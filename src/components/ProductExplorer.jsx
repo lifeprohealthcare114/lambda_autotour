@@ -53,46 +53,54 @@ const ProductExplorer = () => {
   const closePartDetails = () => setSelectedPart(null);
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  const handleTourEnd = async () => {
-    const delay = ms => new Promise(res => setTimeout(res, ms));
+const handleTourEnd = async () => {
+  const delay = ms => new Promise(res => setTimeout(res, ms));
 
-    let currentScroll = window.scrollY;
-    const maxScroll = document.body.scrollHeight - window.innerHeight;
+  let currentScroll = window.scrollY;
+  const maxScroll = document.body.scrollHeight - window.innerHeight;
 
-    while (currentScroll < maxScroll) {
-      window.scrollBy(0, 5);
-      currentScroll += 5;
-      await delay(10);
-    }
+  // Smooth vertical scroll down
+  while (currentScroll < maxScroll) {
+    window.scrollBy(0, 5);
+    currentScroll += 5;
+    await delay(10);
+  }
 
-    const isMobileOrTablet = window.innerWidth <= 1024;
-    if (isMobileOrTablet) {
-      const horizontalContainer = document.querySelector('.scrollable-horizontal');
+  const isMobileOrTablet = window.innerWidth <= 1024;
+  if (isMobileOrTablet) {
+    const horizontalContainer = document.querySelector('.scrollable-horizontal');
 
-      if (horizontalContainer && horizontalContainer.scrollWidth > horizontalContainer.clientWidth) {
-        let scrollLeft = horizontalContainer.scrollLeft;
-        const maxScrollLeft = horizontalContainer.scrollWidth - horizontalContainer.clientWidth;
+    if (horizontalContainer && horizontalContainer.scrollWidth > horizontalContainer.clientWidth) {
+      let scrollLeft = horizontalContainer.scrollLeft;
+      const maxScrollLeft = horizontalContainer.scrollWidth - horizontalContainer.clientWidth;
 
-        while (scrollLeft < maxScrollLeft) {
-          horizontalContainer.scrollBy({ left: 2, behavior: 'auto' });
-          scrollLeft += 2;
-          await delay(15);
-        }
-
-        await delay(1000);
+      // Slower horizontal scroll - scroll by 1px every 15ms
+      while (scrollLeft < maxScrollLeft) {
+        horizontalContainer.scrollBy({ left: 1, behavior: 'auto' });
+        scrollLeft += 1;
+        await delay(15);
       }
+
+      // Wait 1 second after horizontal scroll ends
+      await delay(1000);
     }
+  }
 
-    await delay(6000);
-    scrollToTop();
+  // Wait 6 seconds (regardless of horizontal scroll run or not)
+  await delay(6000);
 
-    setTimeout(() => {
-      window.dispatchEvent(new CustomEvent('navigate-home'));
-    }, 1000);
-  };
+  // Smooth scroll to top
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  // Fire navigation event 1 second after starting scroll up
+  setTimeout(() => {
+    window.dispatchEvent(new CustomEvent('navigate-home'));
+  }, 1000);
+};
+
 
   const stopTour = () => {
-    setResetTour(false);  // Cancel any resetting in progress
+    setResetTour(false); 
     setStartTour(false);
     setTourStopped(true);
   };
@@ -100,7 +108,6 @@ const ProductExplorer = () => {
   const restartTour = () => {
     setTourStopped(false);
 
-    // Trigger resetTour flag to reset VirtualTour internal state and timers
     setResetTour(true);
 
     setStartTour(false);

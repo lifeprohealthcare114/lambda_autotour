@@ -113,7 +113,7 @@
   color: white;
   padding: clamp(3px, 1vw, 4px) clamp(6px, 2vw, 8px);
   border-radius: clamp(3px, 1vw, 4px);
-  font-size: clamp(0.8rem, 2vw, 0.7rem);
+  font-size: clamp(1.2rem, 2vw, 0.7rem);
   white-space: nowrap;
   opacity: 1;
   visibility: visible;
