@@ -272,7 +272,7 @@
 .tour-controls {
   position: fixed;
   top: clamp(10px, 7vh, 63px);
-  left: 53%;
+  left: 88%;
   transform: translateX(-50%);
   z-index: 1001;
   pointer-events: auto;
@@ -1394,9 +1394,9 @@
   margin-top: 15px;
 }
 .skip-button {
-  position: absolute;
-  top: 10px;
-  right: 76px; /* space beside close button */
+  position: fixed;
+  top: 100px;
+  right: 292px; /* space beside close button */
   padding: 6px 14px;
   font-size: 1rem;
   background-color: #2c3e50;

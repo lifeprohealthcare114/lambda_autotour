@@ -3,7 +3,7 @@ import '../styles/HeroSection.css';
 
 const HeroSection = ({ navigateTo }) => {
   const [isMobileView, setIsMobileView] = useState(false);
-  const [showTechSpecs, setShowTechSpecs] = useState(false);
+  const [, setShowTechSpecs] = useState(false);
   const [fadeOut, setFadeOut] = useState(false);
   const videoRef = useRef(null);
 
@@ -56,7 +56,7 @@ const HeroSection = ({ navigateTo }) => {
           Your browser does not support the video tag.
         </video>
       </div>
-
+{/* 
       <div className="hero-content">
         <h1>Lambda Therapy Robot</h1>
         <p>Revolutionizing lower limb rehabilitation</p>
@@ -89,7 +89,7 @@ const HeroSection = ({ navigateTo }) => {
             <div className="spec"><span>Safety</span><span>Emergency stop, overload protection</span></div>
           </div>
         </div>
-      )}
+      )} */}
     </section>
   );
 };
